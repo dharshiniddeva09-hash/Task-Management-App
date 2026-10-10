@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -52,21 +53,25 @@
             background: #1d4ed8;
         }
 
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         #message {
             text-align: center;
             margin-top: 15px;
+            overflow-wrap: anywhere;
         }
     </style>
 </head>
 
 <body>
-
     <div class="container">
         <h2>Create Account</h2>
         <p>Register to manage your tasks</p>
 
         <form id="registerForm">
-
             <label for="name">Full Name</label>
             <input
                 type="text"
@@ -95,13 +100,20 @@
             <button type="submit" id="registerButton">
                 Register
             </button>
-
         </form>
 
-        <p id="message"></p>
+        <p id="message" role="status"></p>
+
+        <p style="text-align:center;">
+            Already have an account?
+            <a href="/login.html">Login</a>
+        </p>
     </div>
 
     <script>
+        const API_URL =
+            "https://task-management-app-ncyu.onrender.com";
+
         const form = document.getElementById("registerForm");
         const message = document.getElementById("message");
         const button = document.getElementById("registerButton");
@@ -109,9 +121,12 @@
         form.addEventListener("submit", async function (event) {
             event.preventDefault();
 
-            const name = document.getElementById("name").value.trim();
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value;
+            const name =
+                document.getElementById("name").value.trim();
+            const email =
+                document.getElementById("email").value.trim();
+            const password =
+                document.getElementById("password").value;
 
             button.disabled = true;
             button.textContent = "Registering...";
@@ -119,7 +134,7 @@
 
             try {
                 const response = await fetch(
-                    "http://localhost:5000/api/auth/register",
+                    `${API_URL}/api/auth/register`,
                     {
                         method: "POST",
                         headers: {
@@ -135,25 +150,29 @@
 
                 const data = await response.json();
 
-                message.textContent = data.message;
-
                 if (response.ok) {
                     message.style.color = "green";
+                    message.textContent =
+                        data.message || "Registration successful!";
+
                     form.reset();
                 } else {
                     message.style.color = "red";
+                    message.textContent =
+                        data.message || "Registration failed.";
                 }
 
             } catch (error) {
-                message.textContent =
-                    "Cannot connect to server. Please check your backend.";
                 message.style.color = "red";
+                message.textContent =
+                    "Cannot connect to server. Please try again.";
+                console.error("Registration error:", error);
             } finally {
                 button.disabled = false;
                 button.textContent = "Register";
             }
         });
     </script>
-
 </body>
 </html>
+```

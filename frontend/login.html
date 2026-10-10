@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,15 +30,10 @@
             color: #2563eb;
         }
 
-        label {
-            display: block;
-            margin-top: 15px;
-        }
-
         input {
             width: 100%;
             padding: 10px;
-            margin-top: 8px;
+            margin: 8px 0 16px;
             box-sizing: border-box;
             border: 1px solid #ccc;
             border-radius: 6px;
@@ -46,7 +42,6 @@
         button {
             width: 100%;
             padding: 12px;
-            margin-top: 20px;
             background: #2563eb;
             color: white;
             border: none;
@@ -58,30 +53,25 @@
             background: #1d4ed8;
         }
 
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         #message {
             text-align: center;
             margin-top: 15px;
-        }
-
-        .register-link {
-            text-align: center;
-            margin-top: 18px;
-        }
-
-        a {
-            color: #2563eb;
+            overflow-wrap: anywhere;
         }
     </style>
 </head>
 
 <body>
-
     <div class="container">
-        <h2>Welcome Back!</h2>
+        <h2>Login</h2>
         <p>Login to manage your tasks</p>
 
         <form id="loginForm">
-
             <label for="email">Email</label>
             <input
                 type="email"
@@ -98,28 +88,34 @@
                 required
             >
 
-            <button type="submit" id="loginButton">Login</button>
-
+            <button type="submit" id="loginButton">
+                Login
+            </button>
         </form>
 
-        <p id="message"></p>
+        <p id="message" role="status"></p>
 
-        <p class="register-link">
+        <p style="text-align:center;">
             Don't have an account?
-            <a href="register.html">Register</a>
+            <a href="/register.html">Register</a>
         </p>
     </div>
 
     <script>
+        const API_URL =
+            "https://task-management-app-ncyu.onrender.com";
+
         const form = document.getElementById("loginForm");
         const message = document.getElementById("message");
         const button = document.getElementById("loginButton");
 
-        form.addEventListener("submit", async function(event) {
+        form.addEventListener("submit", async function (event) {
             event.preventDefault();
 
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value;
+            const email =
+                document.getElementById("email").value.trim();
+            const password =
+                document.getElementById("password").value;
 
             button.disabled = true;
             button.textContent = "Logging in...";
@@ -127,46 +123,52 @@
 
             try {
                 const response = await fetch(
-                    "http://localhost:5000/api/auth/login",
+                    `${API_URL}/api/auth/login`,
                     {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json"
                         },
-                        body: JSON.stringify({ email, password })
+                        body: JSON.stringify({
+                            email: email,
+                            password: password
+                        })
                     }
                 );
 
                 const data = await response.json();
 
                 if (response.ok) {
+                    // Save token only if backend returns one.
                     if (data.token) {
                         localStorage.setItem("token", data.token);
-                        message.style.color = "green";
-                        message.textContent = "Login successful!";
-
-                        // Dashboard will be created next
-                        setTimeout(() => {
-                            window.location.href = "dashboard.html";
-                        }, 1000);
-                    } else {
-                        message.style.color = "red";
-                        message.textContent = "Login API did not return a token.";
                     }
+
+                    message.style.color = "green";
+                    message.textContent =
+                        data.message || "Login successful!";
+
+                    // Open dashboard after successful login.
+                    setTimeout(function () {
+                        window.location.href = "/dashboard.html";
+                    }, 700);
+
                 } else {
                     message.style.color = "red";
-                    message.textContent = data.message || "Login failed";
+                    message.textContent =
+                        data.message || "Login failed. Check your details.";
                 }
 
             } catch (error) {
+                console.error("Login error:", error);
                 message.style.color = "red";
-                message.textContent = "Cannot connect to server.";
+                message.textContent =
+                    "Cannot connect to server. Please try again.";
             } finally {
                 button.disabled = false;
                 button.textContent = "Login";
             }
         });
     </script>
-
 </body>
 </html>
